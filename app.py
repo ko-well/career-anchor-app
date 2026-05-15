@@ -200,3 +200,7 @@ elif st.session_state.step == 2:
 # --- 戻るボタンの案内（後ほどリンクを設定） ---
 st.markdown("---")
 st.write("※診断をやり直す場合はブラウザを更新してください。")
+
+# --- ポータルサイトへ戻るボタン ---
+st.markdown("---")
+st.link_button("🏠 C.HARIGOMA キャリア支援ポータルへ戻る", "https://harigoma-career.streamlit.app/")
