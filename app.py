@@ -4,11 +4,34 @@ import google.generativeai as genai
 # --- ページ設定 ---
 st.set_page_config(page_title="キャリア・アンカー診断＆自己PR設計", layout="wide")
 
+# 👇 ココが変更点です（タブを大きく・目立たせるデザインを追加しました）
 st.markdown("""
 <style>
 h1, h2, h3 { color: #1A5276 !important; }
 .stProgress > div > div > div > div { background-color: #3498DB !important; }
 [data-testid="stFormSubmitButton"] button { background-color: #E67E22 !important; color: white !important; font-size: 20px !important; width: 100% !important; border-radius: 10px !important; }
+
+/* タブのデザインを大きく、目立たせる設定 */
+button[data-baseweb="tab"] {
+    background-color: #F2F4F4 !important; /* 少しグレーの背景をつけてボタンっぽく */
+    border: 1px solid #D5DBDB !important;
+    border-radius: 5px 5px 0 0 !important;
+    padding: 10px 20px !important;
+    margin-right: 5px !important;
+}
+button[data-baseweb="tab"] p {
+    font-size: 18px !important; /* 文字サイズを大きく */
+    font-weight: bold !important; /* 文字を太く */
+    color: #2C3E50 !important;
+}
+/* 選ばれているタブのデザイン */
+button[aria-selected="true"] {
+    background-color: #EBF5FB !important; /* 薄い青色の背景 */
+    border-bottom: 3px solid #3498DB !important; /* 下に青い太線を引く */
+}
+button[aria-selected="true"] p {
+    color: #2874A6 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -72,21 +95,22 @@ if 'step' not in st.session_state:
 if st.session_state.step == 1:
     st.subheader("1. キャリア・アンカー診断（40問）")
     
-    # 案内文を資料の【注意点1】【注意点2】に合わせて追加
     st.info("""
     **【注意点 1】**
     次の40項目について，該当する点数（1～6）を選んでください。深く考えすぎず，自分自身のホンネで、10分以内（1項目につき約15秒）に全項目へ直感で記入しましょう。
 
     **【注意点 2】**
-    全項目の入力が終わったら、最後のタブ（31-40問）の下で、最高点（通常は6または5）を付けた項目の中から、**特に強く該当する項目を「3つ」選んでください**（＋印の代わりになります）。
+    全項目の入力が終わったら、最後のページ（31-40問）の下で、最高点（通常は6または5）を付けた項目の中から、**特に強く該当する項目を「3つ」選んでください**（＋印の代わりになります）。
     """)
     
     with st.form("diagnosis_form"):
         user_name = st.text_input("お名前（苗字またはニックネームで可）", value="あなた")
         st.write("---")
         
+        # 👇 ココが変更点です（操作案内のテキストを追加しました）
+        st.markdown("💡 **【操作方法】 10問ごとにページが分かれています。入力が終わったら、下の「11-20問」などの文字（タブ）をクリックして次のページへ進んでください。**")
+        
         scores = []
-        # タブの名前を少し変更して、最後に提出ボタンがあることを示唆します
         tab1, tab2, tab3, tab4 = st.tabs(["1-10問", "11-20問", "21-30問", "31-40問 ＆ 提出へ"])
         
         with tab1:
@@ -99,7 +123,6 @@ if st.session_state.step == 1:
             for i in range(20, 30):
                 scores.append(st.radio(f"Q{i+1}: {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
         
-        # 4つ目のタブの中に「＋印の選択」と「送信ボタン」を格納します
         with tab4:
             for i in range(30, 40):
                 scores.append(st.radio(f"Q{i+1}: {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
@@ -112,8 +135,7 @@ if st.session_state.step == 1:
                 max_selections=3
             )
             
-            st.write("") # 少し隙間を空ける
-            # 送信ボタンがこのタブを開いた時だけ表示されます
+            st.write("") 
             submitted = st.form_submit_button("診断結果を表示する")
         
         if submitted:
@@ -126,7 +148,7 @@ if st.session_state.step == 1:
             max_idx = cat_scores.index(max(cat_scores))
             st.session_state.top_anchor = categories[max_idx]
             st.session_state.user_name = user_name
-            st.session_state.top3_selections = top3_selections # ＋印のデータを保存
+            st.session_state.top3_selections = top3_selections
             st.session_state.all_results = "\n".join([f"{categories[i]}: {cat_scores[i]}" for i in range(8)])
             st.session_state.step = 2
             st.rerun()
@@ -200,7 +222,6 @@ elif st.session_state.step == 2:
                     st.markdown("---")
                     st.markdown(response.text)
                     
-                    # ダウンロード用テキスト
                     top3_text = "\n".join(st.session_state.top3_selections) if st.session_state.top3_selections else "特になし"
                     final_text = f"""【キャリア・アンカー診断結果】
 {st.session_state.all_results}
@@ -216,15 +237,3 @@ elif st.session_state.step == 2:
 {response.text}
 """
                     st.download_button(
-                        label="📝 自己PR設計図（資料2）を保存する",
-                        data=final_text,
-                        file_name="self_pr_blueprint.txt",
-                        mime="text/plain"
-                    )
-                except Exception as e:
-                    st.error(f"エラーが発生しました: {e}")
-
-# --- ポータルサイトへ戻るボタン ---
-st.markdown("---")
-st.write("※診断をやり直す場合はブラウザを更新してください。")
-st.link_button("🏠 C.HARIGOMA キャリア支援ポータルへ戻る", "https://harigoma-career.streamlit.app/")
