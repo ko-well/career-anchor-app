@@ -237,3 +237,15 @@ elif st.session_state.step == 2:
 {response.text}
 """
                     st.download_button(
+                        label="📝 自己PR設計図（資料2）を保存する",
+                        data=final_text,
+                        file_name="self_pr_blueprint.txt",
+                        mime="text/plain"
+                    )
+                except Exception as e:
+                    st.error(f"エラーが発生しました: {e}")
+
+# --- ポータルサイトへ戻るボタン ---
+st.markdown("---")
+st.write("※診断をやり直す場合はブラウザを更新してください。")
+st.link_button("🏠 C.HARIGOMA キャリア支援ポータルへ戻る", "https://harigoma-career.streamlit.app/")
