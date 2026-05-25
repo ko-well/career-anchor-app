@@ -4,7 +4,6 @@ import google.generativeai as genai
 # --- ページ設定 ---
 st.set_page_config(page_title="キャリア・アンカー診断＆自己PR設計", layout="wide")
 
-# 👇 ココが変更点です（タブを大きく・目立たせるデザインを追加しました）
 st.markdown("""
 <style>
 h1, h2, h3 { color: #1A5276 !important; }
@@ -13,21 +12,20 @@ h1, h2, h3 { color: #1A5276 !important; }
 
 /* タブのデザインを大きく、目立たせる設定 */
 button[data-baseweb="tab"] {
-    background-color: #F2F4F4 !important; /* 少しグレーの背景をつけてボタンっぽく */
+    background-color: #F2F4F4 !important;
     border: 1px solid #D5DBDB !important;
     border-radius: 5px 5px 0 0 !important;
     padding: 10px 20px !important;
     margin-right: 5px !important;
 }
 button[data-baseweb="tab"] p {
-    font-size: 18px !important; /* 文字サイズを大きく */
-    font-weight: bold !important; /* 文字を太く */
+    font-size: 18px !important;
+    font-weight: bold !important;
     color: #2C3E50 !important;
 }
-/* 選ばれているタブのデザイン */
 button[aria-selected="true"] {
-    background-color: #EBF5FB !important; /* 薄い青色の背景 */
-    border-bottom: 3px solid #3498DB !important; /* 下に青い太線を引く */
+    background-color: #EBF5FB !important;
+    border-bottom: 3px solid #3498DB !important;
 }
 button[aria-selected="true"] p {
     color: #2874A6 !important;
@@ -107,7 +105,6 @@ if st.session_state.step == 1:
         user_name = st.text_input("お名前（苗字またはニックネームで可）", value="あなた")
         st.write("---")
         
-        # 👇 ココが変更点です（操作案内のテキストを追加しました）
         st.markdown("💡 **【操作方法】 10問ごとにページが分かれています。入力が終わったら、下の「11-20問」などの文字（タブ）をクリックして次のページへ進んでください。**")
         
         scores = []
@@ -116,12 +113,20 @@ if st.session_state.step == 1:
         with tab1:
             for i in range(0, 10):
                 scores.append(st.radio(f"Q{i+1}: {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
+            # 👇 【修正対応】タブ下の案内を追加
+            st.info("👆 10問目まで入力が終わりましたら、上にある「11-20問」のタブをクリックして次へ進んでください。")
+
         with tab2:
             for i in range(10, 20):
                 scores.append(st.radio(f"Q{i+1}: {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
+            # 👇 【修正対応】タブ下の案内を追加
+            st.info("👆 20問目まで入力が終わりましたら、上にある「21-30問」のタブをクリックして次へ進んでください。")
+
         with tab3:
             for i in range(20, 30):
                 scores.append(st.radio(f"Q{i+1}: {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
+            # 👇 【修正対応】タブ下の案内を追加
+            st.info("👆 30問目まで入力が終わりましたら、上にある「31-40問 ＆ 提出へ」のタブをクリックして最後へ進んでください。")
         
         with tab4:
             for i in range(30, 40):
@@ -135,11 +140,12 @@ if st.session_state.step == 1:
                 max_selections=3
             )
             
-            st.write("") 
+            st.write("")
+            # 👇 【修正対応】3つ選んだ後の次のアクションを明記
+            st.warning("⚠️ 3つ選び終わりましたら、すぐ下にある「診断結果を表示する」ボタンを押して次へ進んでください。")
             submitted = st.form_submit_button("診断結果を表示する")
         
         if submitted:
-            # 計算処理
             cat_scores = []
             for j in range(8):
                 avg = sum([scores[j + (k * 8)] for k in range(5)]) / 5.0
@@ -172,19 +178,26 @@ elif st.session_state.step == 2:
         
         st.write("---")
         st.write("**【前回の振り返り】**")
-        inventory_data = st.text_area("第1段階で作成した「棚卸し完了シート（資料1）」の内容をここに貼り付けてください。")
+        # 👇 【修正対応】ファイル貼り付け間違いを防ぐ、具体的で強い注意書きに変更
+        inventory_data = st.text_area(
+            "第1段階で作成した「棚卸し完了シート（資料1）」（または強み発見アプリのデータ）のテキストをここに貼り付けてください。\n\n"
+            "🚨【注意】ファイル（アイコン）をそのまま画面にドラッグ＆ドロップすることはできません。\n"
+            "必ずファイルを開いて、中の「文字（テキスト）」をすべてコピーしてから、この枠の中に貼り付けてください。"
+        )
         
         st.write("---")
         st.write("**【応募先の情報】**")
         job_info = st.text_input("応募したい職種や業界（例：医療事務，IT企業の営業など）")
         
+        # 👇 【修正対応】AIが考え始めるボタンであることを明記
+        st.write("入力を終えたら、下のボタンを押してください。AIがデータの統合を開始します。（10秒ほどお待ちください）")
         submit_final = st.form_submit_button("自己PR設計図（資料2）を生成する")
 
     if submit_final:
         if not api_key:
             st.error("⚠️ APIキーを入力してください。")
         elif not inventory_data:
-            st.warning("⚠️ 棚卸しシート（資料1）の内容を貼り付けてください。")
+            st.warning("⚠️ 棚卸しシート（資料1）のテキストを貼り付けてください。")
         else:
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-2.5-flash')
@@ -216,7 +229,7 @@ elif st.session_state.step == 2:
             ・読点は必ず「，」を使用すること。
             """
             
-            with st.spinner('AIがあなたの価値観と経験を統合しています...'):
+            with st.spinner('⏳ AIがあなたの価値観と経験を統合し、自己PRを考え中です... しばらくお待ちください...'):
                 try:
                     response = model.generate_content(prompt)
                     st.markdown("---")
