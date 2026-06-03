@@ -4,37 +4,132 @@ import google.generativeai as genai
 # --- ページ設定 ---
 st.set_page_config(page_title="キャリア・アンカー診断＆自己PR設計", layout="wide")
 
+# --- カスタムCSS（壁紙・明朝体・桜色テーマ・スマホ対応） ---
 st.markdown("""
 <style>
-h1, h2, h3 { color: #1A5276 !important; }
-.stProgress > div > div > div > div { background-color: #3498DB !important; }
-[data-testid="stFormSubmitButton"] button { background-color: #E67E22 !important; color: white !important; font-size: 20px !important; width: 100% !important; border-radius: 10px !important; }
+/* 1. 全体のフォントを游明朝に統一（アイコン崩れ防止のため span は除外） */
+html, body, p, div, a, button, h1, h2, h3, h4, h5, h6, label {
+    font-family: 'Yu Mincho', '游明朝', 'YuMincho', 'Hiragino Mincho ProN', 'HGS明朝E', serif !important;
+}
 
-/* タブのデザインを大きく、目立たせる設定 */
+/* 2. ページ全体の壁紙（和紙風テクスチャ） */
+.stApp {
+    background-color: #FCFAFA;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+    background-attachment: fixed;
+}
+
+/* 3. ヘッダーデザイン（PC用） */
+.header-box {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom: 2px solid #DB90A0;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+.header-title { font-size: 2.2rem; font-weight: 700; color: #3D2D2E; }
+.header-subtitle { font-size: 1.1rem; color: #5C4B4D; margin-top: 0.8rem; line-height: 1.6; }
+
+/* 4. 各種コンテナ・ボックスのデザイン */
+div[data-testid="stForm"] {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-radius: 8px !important;
+    padding: 30px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+}
+
+/* ★先生オリジナルのタブデザインを桜色テーマに調整 */
 button[data-baseweb="tab"] {
-    background-color: #F2F4F4 !important;
-    border: 1px solid #D5DBDB !important;
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid #EAE1E3 !important;
     border-radius: 5px 5px 0 0 !important;
     padding: 10px 20px !important;
     margin-right: 5px !important;
 }
 button[data-baseweb="tab"] p {
-    font-size: 18px !important;
+    font-size: 1.1rem !important;
     font-weight: bold !important;
-    color: #2C3E50 !important;
+    color: #5C4B4D !important;
 }
 button[aria-selected="true"] {
-    background-color: #EBF5FB !important;
-    border-bottom: 3px solid #3498DB !important;
+    background-color: #FDFEFE !important;
+    border-bottom: 3px solid #DB90A0 !important;
 }
 button[aria-selected="true"] p {
-    color: #2874A6 !important;
+    color: #C27082 !important;
+}
+
+/* プログレスバーの色変更 */
+.stProgress > div > div > div > div { background-color: #DB90A0 !important; }
+
+h1, h2, h3 { color: #3D2D2E !important; }
+
+/* 5. スマートフォン向けの画面表示設定（レスポンシブ対応） */
+@media screen and (max-width: 768px) {
+    .header-title { font-size: 1.5rem !important; }
+    .header-subtitle { font-size: 0.95rem !important; margin-top: 0.8rem !important; }
+    .header-box { padding: 2rem 1rem !important; }
+    
+    div[data-testid="stForm"] { padding: 15px !important; }
+    
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; margin-bottom: 0.5rem !important; }
+    p, label { font-size: 0.95rem !important; line-height: 1.6 !important; }
+    
+    /* タブのスマホ最適化（少し小さくして横スクロールしやすく） */
+    button[data-baseweb="tab"] { padding: 8px 12px !important; }
+    button[data-baseweb="tab"] p { font-size: 0.95rem !important; }
+    
+    /* スマホ用ボタン調整（横幅いっぱい） */
+    [data-testid="stFormSubmitButton"] button, 
+    .stButton button, 
+    [data-testid="stLinkButton"] a {
+        padding: 0.6rem 1rem !important;
+        font-size: 1rem !important;
+        width: 100% !important;
+        text-align: center;
+        margin-bottom: 10px !important;
+    }
+}
+
+/* 6. ボタンのデザイン（PC用ベース） */
+[data-testid="stFormSubmitButton"] button, 
+.stButton button,
+[data-testid="stLinkButton"] a {
+    background-color: #DB90A0 !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    padding: 0.7rem 3rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    width: 100% !important;
+    text-align: center;
+    text-decoration: none !important;
+    transition: all 0.3s ease;
+}
+[data-testid="stFormSubmitButton"] button:hover,
+.stButton button:hover,
+[data-testid="stLinkButton"] a:hover {
+    background-color: #C27082 !important;
+    transform: translateY(-2px);
+}
+[data-testid="stLinkButton"] a * {
+    color: #ffffff !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🌱 自己PR作成ステップ2：キャリア・アンカー診断")
-st.write("ここでは，あなたが仕事をする上で「絶対に譲れない軸（キャリア・アンカー）」を特定し，自己PRの設計図を完成させます。")
+# --- タイトル表示 ---
+st.markdown('''
+<div class="header-box">
+    <div class="header-title">🌱 自己PR作成ステップ2：キャリア・アンカー診断</div>
+    <div class="header-subtitle">
+        ここでは、あなたが仕事をする上で「絶対に譲れない軸（キャリア・アンカー）」を特定し、自己PRの設計図を完成させます。
+    </div>
+</div>
+''', unsafe_allow_html=True)
 
 # --- APIキー設定 ---
 st.sidebar.header("🔑 セキュリティ設定")
@@ -143,7 +238,7 @@ if st.session_state.step == 1:
             st.write("")
             # 👇 【修正対応】3つ選んだ後の次のアクションを明記
             st.warning("⚠️ 3つ選び終わりましたら、すぐ下にある「診断結果を表示する」ボタンを押して次へ進んでください。")
-            submitted = st.form_submit_button("診断結果を表示する")
+            submitted = st.form_submit_button("診断結果を表示する ✨")
         
         if submitted:
             cat_scores = []
@@ -191,7 +286,7 @@ elif st.session_state.step == 2:
         
         # 👇 【修正対応】AIが考え始めるボタンであることを明記
         st.write("入力を終えたら、下のボタンを押してください。AIがデータの統合を開始します。（10秒ほどお待ちください）")
-        submit_final = st.form_submit_button("自己PR設計図（資料2）を生成する")
+        submit_final = st.form_submit_button("自己PR設計図（資料2）を生成する ✨")
 
     if submit_final:
         if not api_key:
