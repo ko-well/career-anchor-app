@@ -207,36 +207,37 @@ if st.session_state.step == 1:
         
         with tab1:
             for i in range(0, 10):
-                scores.append(st.radio(f"Q{i+1}: {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
-            # 👇 【修正対応】タブ下の案内を追加
+                # ★Qと番号の後のコロンを全角「：」に変更
+                scores.append(st.radio(f"Q{i+1}： {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
             st.info("👆 10問目まで入力が終わりましたら、上にある「11-20問」のタブをクリックして次へ進んでください。")
 
         with tab2:
             for i in range(10, 20):
-                scores.append(st.radio(f"Q{i+1}: {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
-            # 👇 【修正対応】タブ下の案内を追加
+                # ★Qと番号の後のコロンを全角「：」に変更
+                scores.append(st.radio(f"Q{i+1}： {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
             st.info("👆 20問目まで入力が終わりましたら、上にある「21-30問」のタブをクリックして次へ進んでください。")
 
         with tab3:
             for i in range(20, 30):
-                scores.append(st.radio(f"Q{i+1}: {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
-            # 👇 【修正対応】タブ下の案内を追加
+                # ★Qと番号の後のコロンを全角「：」に変更
+                scores.append(st.radio(f"Q{i+1}： {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
             st.info("👆 30問目まで入力が終わりましたら、上にある「31-40問 ＆ 提出へ」のタブをクリックして最後へ進んでください。")
         
         with tab4:
             for i in range(30, 40):
-                scores.append(st.radio(f"Q{i+1}: {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
+                # ★Qと番号の後のコロンを全角「：」に変更
+                scores.append(st.radio(f"Q{i+1}： {questions[i]}", [1, 2, 3, 4, 5, 6], index=2, horizontal=True, key=f"q{i}"))
             
             st.markdown("---")
             st.write("🌟 **【＋印の選択】特に強く該当する項目を3つ選んでください**")
             top3_selections = st.multiselect(
                 "最高点（6や5）を付けた質問の中から、あなたにとって「特に重要だ」と思うものを最大3つまで選んでください。",
-                options=[f"Q{i+1}: {questions[i]}" for i in range(40)],
+                # ★ここも全角コロンに変更
+                options=[f"Q{i+1}： {questions[i]}" for i in range(40)],
                 max_selections=3
             )
             
             st.write("")
-            # 👇 【修正対応】3つ選んだ後の次のアクションを明記
             st.warning("⚠️ 3つ選び終わりましたら、すぐ下にある「診断結果を表示する」ボタンを押して次へ進んでください。")
             submitted = st.form_submit_button("診断結果を表示する ✨")
         
@@ -273,7 +274,6 @@ elif st.session_state.step == 2:
         
         st.write("---")
         st.write("**【前回の振り返り】**")
-        # 👇 【修正対応】ファイル貼り付け間違いを防ぐ、具体的で強い注意書きに変更
         inventory_data = st.text_area(
             "第1段階で作成した「棚卸し完了シート（資料1）」（または強み発見アプリのデータ）のテキストをここに貼り付けてください。\n\n"
             "🚨【注意】ファイル（アイコン）をそのまま画面にドラッグ＆ドロップすることはできません。\n"
@@ -284,7 +284,6 @@ elif st.session_state.step == 2:
         st.write("**【応募先の情報】**")
         job_info = st.text_input("応募したい職種や業界（例：医療事務，IT企業の営業など）")
         
-        # 👇 【修正対応】AIが考え始めるボタンであることを明記
         st.write("入力を終えたら、下のボタンを押してください。AIがデータの統合を開始します。（10秒ほどお待ちください）")
         submit_final = st.form_submit_button("自己PR設計図（資料2）を生成する ✨")
 
